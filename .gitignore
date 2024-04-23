@@ -1,0 +1,5 @@
+.vscode/
+renpy/
+
+*.rpyc
+.DS_Store
