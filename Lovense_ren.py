@@ -82,7 +82,7 @@ class Lovense:
 
     def _send_command(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:
         return self._send_json_request(
-            "http://{self.local_ip}:{self.http_port}", "/command", data
+            f"http://{self.local_ip}:{self.http_port}", "/command", data
         )
 
     def send_function(
@@ -220,7 +220,7 @@ class Lovense:
         try:
             endpoint = QR_CODE_ENDPOINT
         except NameError:
-            endpoint = "/api/v1/lovense/qr_code"
+            endpoint = "api/v1/lovense/qr_code"
 
         result = self._send_json_request(
             endpoint=endpoint,
@@ -229,7 +229,7 @@ class Lovense:
 
         if result is not None:
             with open(os.path.join(config.gamedir, "lovense_qr_code.jpg"), "wb") as f:
-                f.write(renpy.fetch(result["data"]["qr"]).content)
+                f.write(renpy.fetch(result["data"]["qr"]))
 
     def set_user(self) -> None:
         if not self.get_server_status():
@@ -238,7 +238,7 @@ class Lovense:
         try:
             endpoint = USERS_ENDPOINT
         except NameError:
-            endpoint = "/api/v1/lovense/users"
+            endpoint = "api/v1/lovense/users"
 
         try:
             lovense_user = renpy.fetch(f"{SERVER_URL}/{endpoint}/{persistent.uuid}")
