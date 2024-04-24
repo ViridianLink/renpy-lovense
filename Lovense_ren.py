@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 from typing import Any, ClassVar, Iterable, Optional, Sequence, Union
 
@@ -34,14 +35,24 @@ class Lovense:
 
         self.last_refresh: datetime.datetime = datetime.datetime.now()
 
-        self.server_online: bool = False
         self.status_message: str = ""
         self.toys: dict[str, str] = {}
-        self.last_updated: int = 0
+        self.last_updated: datetime.datetime = datetime.datetime.min
 
         self.current_strengths: dict[LovenseAction, int] = {
             action: 0 for action in LovenseAction
         }
+
+    def server_status(self) -> bool:
+        try:
+            renpy.fetch(SERVER_URL, timeout=3)
+        except Exception as e:
+            print(e)
+            self.status_message = "Server Offline. Please connect with Game Mode"
+            return False
+
+        self.status_message = ""
+        return True
 
     @staticmethod
     def _strengths(
@@ -62,7 +73,7 @@ class Lovense:
         endpoint: str = "",
         json: Any = None,
     ):
-        if not self.get_server_status():
+        if not self.server_status():
             return
 
         try:
@@ -82,7 +93,7 @@ class Lovense:
 
     def _send_command(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:
         return self._send_json_request(
-            f"http://{self.local_ip}:{self.http_port}", "/command", data
+            f"http://{self.local_ip}:{self.http_port}", "command", data
         )
 
     def send_function(
@@ -117,7 +128,7 @@ class Lovense:
         if result is None:
             return
 
-        self.toys = result["data"]["toys"]
+        self.toys = json.loads(result["data"]["toys"])
 
     def vibrate(
         self,
@@ -204,18 +215,6 @@ class Lovense:
 
         self.current_strengths = {s: 0 for s in self.current_strengths}
 
-    def get_server_status(self) -> bool:
-        try:
-            renpy.fetch(SERVER_URL, timeout=3)
-        except Exception as e:
-            print(e)
-            self.server_online = False
-            self.status_message = "Server Offline. Please connect with Game Mode"
-            return False
-
-        self.status_message = ""
-        return True
-
     def download_qr_code(self) -> None:
         try:
             endpoint = QR_CODE_ENDPOINT
@@ -232,7 +231,7 @@ class Lovense:
                 f.write(renpy.fetch(result["data"]["qr"]))
 
     def set_user(self) -> None:
-        if not self.get_server_status():
+        if not self.server_status():
             return
 
         try:
@@ -241,20 +240,25 @@ class Lovense:
             endpoint = "api/v1/lovense/users"
 
         try:
-            lovense_user = renpy.fetch(f"{SERVER_URL}/{endpoint}/{persistent.uuid}")
+            lovense_user = renpy.fetch(
+                f"{SERVER_URL}/{endpoint}/{persistent.uuid}", result="json"
+            )
         except Exception as e:
-            self.status_message = "User not found."
+            if config.developer:
+                raise
             print(e)
+            self.status_message = "User not found."
             return
 
         self.http_port = lovense_user["http_port"]
         self.local_ip = lovense_user["domain"]
-        self.last_updated = lovense_user["last_update"]
+        self.last_updated = datetime.datetime.fromisoformat(lovense_user["last_update"])
 
     def refresh(self) -> None:
         self.download_qr_code()
         self.set_user()
-        self.get_toys()
+        if self.local_ip and self.http_port:
+            self.get_toys()
         self.last_refresh = datetime.datetime.now()
 
 
