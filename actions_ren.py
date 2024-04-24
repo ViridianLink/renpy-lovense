@@ -11,7 +11,7 @@ init python:
 
 
 class LovenseRefresh(Action):
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self) -> Any:
         renpy.restart_interaction()
         return lovense.refresh()
 
