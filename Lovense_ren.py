@@ -65,7 +65,11 @@ class Lovense:
             return (s,)
 
         # if isinstance(s, float):
-        return tuple(round(Lovense.MAX_STRENGTHS[action] * s) for action in actions)
+        return tuple(
+            round(Lovense.MAX_STRENGTHS[action] * s)
+            for action in LovenseAction
+            if action in actions
+        )
 
     def _send_json_request(
         self,
@@ -104,7 +108,8 @@ class Lovense:
         stop_previous: bool = True,
     ) -> None:
         strengths = self._strengths(strengths, actions)
-        actions_with_strengths = zip(actions, strengths)
+        actions2 = tuple(action for action in LovenseAction if action in actions)
+        actions_with_strengths = zip(actions2, strengths)
 
         data: dict[str, object] = {
             "command": "Function",
