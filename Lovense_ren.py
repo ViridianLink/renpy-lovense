@@ -14,7 +14,7 @@ QR_CODE_ENDPOINT: str = ""
 USERS_ENDPOINT: str = ""
 
 """renpy
-init python:
+init 1 python:
 """
 
 
