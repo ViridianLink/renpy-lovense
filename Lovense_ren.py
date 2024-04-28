@@ -90,8 +90,6 @@ class Lovense:
 
             return result
         except Exception as e:
-            if config.developer:
-                raise
             print(e)
             self.server_online = False
 
@@ -249,8 +247,6 @@ class Lovense:
                 f"{SERVER_URL}/{endpoint}/{persistent.uuid}", result="json"
             )
         except Exception as e:
-            if config.developer:
-                raise
             print(e)
             self.status_message = "User not found."
             return
