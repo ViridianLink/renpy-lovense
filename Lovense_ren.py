@@ -131,7 +131,10 @@ class Lovense:
         if result is None:
             return
 
-        self.toys = json.loads(result["data"]["toys"])
+        try:
+            self.toys = json.loads(result["data"]["toys"])
+        except Exception:
+            self.toys = {}
 
     def vibrate(
         self,
