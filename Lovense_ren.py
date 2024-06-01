@@ -29,6 +29,8 @@ class Lovense:
         LovenseAction.DEPTH: 3,
     }
 
+    server_online: bool = True
+
     def __init__(self) -> None:
         self.local_ip: str = ""
         self.http_port: str = ""
@@ -43,16 +45,16 @@ class Lovense:
             action: 0 for action in LovenseAction
         }
 
-    def server_status(self) -> bool:
+    def server_status(self) -> None:
         try:
             renpy.fetch(SERVER_URL, timeout=3)
         except Exception as e:
             print(e)
             self.status_message = "Server Offline. Please connect with Game Mode"
-            return False
+            self.server_online = False
 
         self.status_message = ""
-        return True
+        self.server_online = True
 
     @staticmethod
     def _strengths(
@@ -77,7 +79,7 @@ class Lovense:
         endpoint: str = "",
         json: Any = None,
     ):
-        if not self.server_status():
+        if not self.server_online:
             return
 
         try:
@@ -91,7 +93,6 @@ class Lovense:
             return result
         except Exception as e:
             print(e)
-            self.server_online = False
 
     def _send_command(self, data: dict[str, Any]) -> Optional[dict[str, Any]]:
         return self._send_json_request(
@@ -237,7 +238,7 @@ class Lovense:
                 f.write(renpy.fetch(result["data"]["qr"]))
 
     def set_user(self) -> None:
-        if not self.server_status():
+        if not self.server_online:
             return
 
         try:
