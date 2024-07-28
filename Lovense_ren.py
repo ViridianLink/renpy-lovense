@@ -80,7 +80,7 @@ class Lovense:
         endpoint: str = "",
         json: Any = None,
     ):
-        if not self.server_online:
+        if url == SERVER_URL and not self.server_online:
             return
 
         try:
@@ -108,8 +108,10 @@ class Lovense:
         stop_previous: bool = True,
     ) -> None:
         strengths = self._strengths(strengths, actions)
-        actions2 = tuple(action for action in LovenseAction if action in actions)
-        actions_with_strengths = zip(actions2, strengths)
+        filtered_actions = tuple(
+            action for action in LovenseAction if action in actions
+        )
+        actions_with_strengths = zip(filtered_actions, strengths)
 
         data: dict[str, object] = {
             "command": "Function",
