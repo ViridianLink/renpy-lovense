@@ -52,6 +52,7 @@ class Lovense:
             print(e)
             self.status_message = "Server Offline. Please connect with Game Mode"
             self.server_online = False
+            return
 
         self.status_message = ""
         self.server_online = True
